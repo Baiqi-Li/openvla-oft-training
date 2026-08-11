@@ -226,5 +226,17 @@ OXE_NAMED_MIXTURES: Dict[str, List[Tuple[str, float]]] = {
     "aloha1_put_X_into_pot_300_demos": [
         ("aloha1_put_X_into_pot_300_demos", 1.0),
     ],
+
+    # === Panda Fine-Tuning Datasets (converted from LeRobot) ===
+    "panda_2026_02_09_all": [
+        ("panda_2026_02_09_all", 1.0),
+    ],
+    "panda_2026_03_27": [
+        ("panda_2026_03_27", 1.0),
+    ],
+    "panda_all": [
+        ("panda_2026_02_09_all", 1.0),
+        ("panda_2026_03_27", 1.0),
+    ],
 # fmt: on
 }

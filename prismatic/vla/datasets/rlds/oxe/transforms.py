@@ -846,6 +846,13 @@ def aloha_dataset_transform(trajectory: Dict[str, Any]) -> Dict[str, Any]:
     return trajectory
 
 
+def panda_lerobot_dataset_transform(trajectory: Dict[str, Any]) -> Dict[str, Any]:
+    # Don't need to do anything: the LeRobot -> RLDS converter already emits
+    # action = joint velocity (7) + absolute gripper position (1) and
+    # observation["state"] = joint positions (7) + gripper position (1).
+    return trajectory
+
+
 # === Registry ===
 OXE_STANDARDIZATION_TRANSFORMS = {
     "bridge_oxe": bridge_oxe_dataset_transform,
@@ -930,4 +937,7 @@ OXE_STANDARDIZATION_TRANSFORMS = {
     "aloha1_fold_shirt_30_demos": aloha_dataset_transform,
     "aloha1_scoop_X_into_bowl_45_demos": aloha_dataset_transform,
     "aloha1_put_X_into_pot_300_demos": aloha_dataset_transform,
+    ### Panda fine-tuning datasets (converted from LeRobot)
+    "panda_2026_02_09_all": panda_lerobot_dataset_transform,
+    "panda_2026_03_27": panda_lerobot_dataset_transform,
 }
