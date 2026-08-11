@@ -36,7 +36,15 @@ from experiments.robot.openvla_utils import (
 from experiments.robot.robot_utils import (
     get_image_resize_size,
 )
-from prismatic.vla.constants import ACTION_DIM, ACTION_TOKEN_BEGIN_IDX, IGNORE_INDEX, NUM_ACTIONS_CHUNK, PROPRIO_DIM, STOP_INDEX
+from prismatic.vla.constants import (
+    ACTION_DIM,
+    ACTION_TOKEN_BEGIN_IDX,
+    IGNORE_INDEX,
+    NUM_ACTIONS_CHUNK,
+    PROPRIO_DIM,
+    ROBOT_PLATFORM,
+    STOP_INDEX,
+)
 
 
 def get_openvla_prompt(instruction: str, openvla_path: Union[str, Path]) -> str:
@@ -50,6 +58,12 @@ class OpenVLAServer:
         A simple server for OpenVLA models; exposes `/act` to predict an action for a given observation + instruction.
         """
         self.cfg = cfg
+
+        # Get expected image dimensions
+        self.resize_size = get_image_resize_size(cfg)
+
+        # Validate the serving configuration before spending minutes loading weights
+        self._run_startup_checks()
 
         # Load model
         self.vla = get_vla(cfg)
@@ -71,9 +85,59 @@ class OpenVLAServer:
         self.processor = None
         self.processor = get_processor(cfg)
 
-        # Get expected image dimensions
-        self.resize_size = get_image_resize_size(cfg)
+        # Log the shape of the first predicted action chunk, so a client can be verified against it
+        self._logged_action_shape = False
 
+    def _run_startup_checks(self) -> None:
+        """
+        Print the resolved serving configuration and fail fast on any mismatch the launcher declared.
+
+        Several `DeployConfig` defaults do not match every fine-tune (`num_images_in_input=3` and
+        `use_film=False` in particular), and the robot-platform constants are picked up implicitly.
+        Getting either wrong yields wrong-shaped or silently degraded actions rather than an error,
+        so a launcher can pin the values it expects via the `expected_*` fields.
+        """
+        print("=" * 80)
+        print("OpenVLA-OFT server configuration")
+        print("-" * 80)
+        print(f"  checkpoint            = {self.cfg.pretrained_checkpoint}")
+        print(f"  unnorm_key            = {self.cfg.unnorm_key}")
+        print(f"  robot platform        = {ROBOT_PLATFORM}")
+        print(f"  num_actions_chunk     = {NUM_ACTIONS_CHUNK}")
+        print(f"  action_dim            = {ACTION_DIM}")
+        print(f"  proprio_dim           = {PROPRIO_DIM}")
+        print(f"  num_images_in_input   = {self.cfg.num_images_in_input}")
+        print(f"  use_film              = {self.cfg.use_film}")
+        print(f"  use_proprio           = {self.cfg.use_proprio}")
+        print(f"  use_l1_regression     = {self.cfg.use_l1_regression}")
+        print(f"  use_diffusion         = {self.cfg.use_diffusion}")
+        print(f"  center_crop           = {self.cfg.center_crop}")
+        print(f"  lora_rank             = {self.cfg.lora_rank}")
+        print(f"  image size            = {self.resize_size}")
+        print("=" * 80)
+
+        expectations = [
+            ("robot platform", ROBOT_PLATFORM, self.cfg.expected_robot_platform.strip().upper()),
+            ("num_actions_chunk", NUM_ACTIONS_CHUNK, self.cfg.expected_num_actions_chunk),
+            ("action_dim", ACTION_DIM, self.cfg.expected_action_dim),
+            ("proprio_dim", PROPRIO_DIM, self.cfg.expected_proprio_dim),
+            ("num_images_in_input", self.cfg.num_images_in_input, self.cfg.expected_num_images_in_input),
+        ]
+        mismatches = [
+            f"{name}: expected {expected!r}, got {actual!r}"
+            for name, actual, expected in expectations
+            if expected and expected != actual
+        ]
+        if self.cfg.expected_use_film is not None and self.cfg.expected_use_film != self.cfg.use_film:
+            mismatches.append(f"use_film: expected {self.cfg.expected_use_film}, got {self.cfg.use_film}")
+        if mismatches:
+            raise ValueError(
+                "Serving configuration does not match what the launcher declared:\n  "
+                + "\n  ".join(mismatches)
+                + "\n\nFor the robot-platform constants, set the `ROBOT_PLATFORM` env var "
+                "(see `prismatic/vla/constants.py`). For the rest, pass the matching "
+                "`--<name>` flag -- it must agree with how the checkpoint was trained."
+            )
 
     def get_server_action(self, payload: Dict[str, Any]) -> str:
         try:
@@ -88,6 +152,14 @@ class OpenVLAServer:
             action = get_vla_action(
                 self.cfg, self.vla, self.processor, observation, instruction, action_head=self.action_head, proprio_projector=self.proprio_projector, use_film=self.cfg.use_film,
             )
+
+            if not self._logged_action_shape:
+                self._logged_action_shape = True
+                chunk = np.asarray(action)
+                print(f"First action chunk: shape={chunk.shape}, dtype={chunk.dtype}")
+                print(f"  instruction: {instruction!r}")
+                print(f"  per-dim min: {np.round(chunk.min(axis=0), 4).tolist()}")
+                print(f"  per-dim max: {np.round(chunk.max(axis=0), 4).tolist()}")
 
             if double_encode:
                 return JSONResponse(json_numpy.dumps(action))
@@ -138,6 +210,21 @@ class DeployConfig:
 
     load_in_8bit: bool = False                       # (For OpenVLA only) Load with 8-bit quantization
     load_in_4bit: bool = False                       # (For OpenVLA only) Load with 4-bit quantization
+
+    #################################################################################################################
+    # Startup self-checks (0 / "" disables the individual check)
+    #
+    # `num_images_in_input` and `use_film` above default to values that do NOT match every
+    # fine-tune, and the robot-platform constants are resolved implicitly at import time. Pin
+    # what this checkpoint needs here so a mismatch fails at startup instead of silently
+    # producing wrong-shaped actions.
+    #################################################################################################################
+    expected_robot_platform: str = ""                # e.g. "PANDA" (see prismatic/vla/constants.py)
+    expected_num_actions_chunk: int = 0              # e.g. 15
+    expected_action_dim: int = 0                     # e.g. 8
+    expected_proprio_dim: int = 0                    # e.g. 8
+    expected_num_images_in_input: int = 0            # e.g. 2
+    expected_use_film: Optional[bool] = None         # e.g. True
 
     #################################################################################################################
     # Utils

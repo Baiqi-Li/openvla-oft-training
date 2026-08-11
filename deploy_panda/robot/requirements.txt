@@ -1,0 +1,21 @@
+# Robot-host dependencies. Documentation, not something you should normally need to run.
+#
+# The client talks to the server over `urllib` (stdlib) and encodes numpy arrays with a
+# built-in reimplementation of the json-numpy wire format, so it adds NOTHING to the
+# environment that already runs `evaluate_openpi_baiqi.py`.
+#
+# Required by openvla_oft_client.py + smoke_test_client.py:
+numpy
+Pillow
+
+# Additionally required by evaluate_openvla_oft_baiqi.py -- all already used by
+# evaluate_openpi_baiqi.py, so they are present on the robot host by definition:
+pandas
+tqdm
+tyro
+moviepy
+# droid  (the robot stack itself; installed out of band)
+
+# Optional. If importable, it is used in place of the built-in codec; the two are
+# byte-for-byte identical on the wire, so installing it changes nothing functionally.
+# json-numpy

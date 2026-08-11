@@ -1,0 +1,142 @@
+{
+  "_README": {
+    "description": "Task definitions for evaluate_openvla_oft_baiqi.py. Keys starting with '_' are ignored.",
+    "steps": [],
+    "notes": [
+      "Every string in a 'steps' list is sent to the policy verbatim as its instruction.",
+      "It MUST be one of the 24 instructions the policy was trained on, word for word.",
+      "Anything else is out of distribution for both the prompt and the FiLM conditioning.",
+      "Source of truth: training/2026-02-09-all/meta/tasks.jsonl (228 demos, 24 tasks).",
+      "The server lowercases the instruction, so case does not matter, but wording does.",
+      "Multi-stage sentences like 'move the cup to the right and pour the coke into the cup'",
+      "are single trained instructions -- do NOT split them into separate steps.",
+      "Multi-step tasks are for CHAINING several trained instructions; see the 'chain_*' entries."
+    ]
+  },
+
+  "grasp_coke": {
+    "description": "Grasp the coke can",
+    "steps": ["grasp the coke"]
+  },
+  "grasp_fanta": {
+    "description": "Grasp the fanta can",
+    "steps": ["grasp the fanta"]
+  },
+  "grasp_sprite": {
+    "description": "Grasp the sprite can",
+    "steps": ["grasp the sprite"]
+  },
+
+  "cup_left": {
+    "description": "Pick up the left cup",
+    "steps": ["pick up the cup on the left"]
+  },
+  "cup_middle": {
+    "description": "Pick up the middle cup",
+    "steps": ["pick up the cup in the middle"]
+  },
+  "cup_right": {
+    "description": "Pick up the right cup",
+    "steps": ["pick up the cup on the right"]
+  },
+
+  "corn_table": {
+    "description": "Pick up the corn on the table",
+    "steps": ["pick up the corn on the table"]
+  },
+  "corn_bowl": {
+    "description": "Pick up the corn in the bowl",
+    "steps": ["pick up the corn in the bowl"]
+  },
+  "corn_plate": {
+    "description": "Pick up the corn on the plate",
+    "steps": ["pick up the corn on the plate"]
+  },
+
+  "pick_tape": {
+    "description": "Pick up the tape",
+    "steps": ["pick up the tape"]
+  },
+  "pick_mustard": {
+    "description": "Pick up the mustard",
+    "steps": ["pick up the mustard"]
+  },
+  "pick_pringles": {
+    "description": "Pick up the pringles",
+    "steps": ["pick up the pringles"]
+  },
+
+  "tide_front": {
+    "description": "Move the tide in front of the book",
+    "steps": ["move the tide to the front of the book"]
+  },
+  "tide_left": {
+    "description": "Move the tide to the left of the book",
+    "steps": ["move the tide to the left side of the book"]
+  },
+  "tide_right": {
+    "description": "Move the tide to the right of the book",
+    "steps": ["move the tide to the right side of the book"]
+  },
+
+  "stack_cups": {
+    "description": "Stack the cups",
+    "steps": ["stack the cups"]
+  },
+  "cup_in_basket": {
+    "description": "Put the cup in the basket",
+    "steps": ["put the cup in the basket"]
+  },
+  "cup_on_plate": {
+    "description": "Put the cup on the plate",
+    "steps": ["put the cup on the plate"]
+  },
+
+  "pour_coke": {
+    "description": "Move the cup right and pour the coke into it",
+    "steps": ["move the cup to the right and pour the coke into the cup"]
+  },
+  "pour_sprite": {
+    "description": "Move the cup right and pour the sprite into it",
+    "steps": ["move the cup to the right and pour the sprite into the cup"]
+  },
+  "pour_fanta": {
+    "description": "Move the cup right and pour the fanta into it",
+    "steps": ["move the cup to the right and pour the fanta into the cup"]
+  },
+
+  "apple_on_tray": {
+    "description": "Put the apple on the tray",
+    "steps": ["put the apple on the tray"]
+  },
+  "apple_then_banana": {
+    "description": "Apple on the tray, then banana",
+    "steps": ["put the apple on the tray and then put the banana on the tray"]
+  },
+  "banana_then_apple": {
+    "description": "Banana on the tray, then apple",
+    "steps": ["put the banana on the tray and then put the apple on the tray"]
+  },
+
+  "chain_grasp_and_pour_coke": {
+    "description": "CHAINED: grasp the coke, then pour it. Scored per stage.",
+    "steps": [
+      "grasp the coke",
+      "move the cup to the right and pour the coke into the cup"
+    ]
+  },
+  "chain_grasp_and_pour_sprite": {
+    "description": "CHAINED: grasp the sprite, then pour it. Scored per stage.",
+    "steps": [
+      "grasp the sprite",
+      "move the cup to the right and pour the sprite into the cup"
+    ]
+  },
+  "chain_cups_to_plate_and_basket": {
+    "description": "CHAINED: cup on the plate, then a cup in the basket.",
+    "steps": [
+      "put the cup on the plate",
+      "put the cup in the basket"
+    ]
+  }
+}

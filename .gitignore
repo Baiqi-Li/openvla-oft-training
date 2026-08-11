@@ -151,3 +151,6 @@ data/
 # Rollout videos and wandb logs
 rollouts/
 wandb/
+
+# Machine-specific deployment settings (paths, hostnames); config.example.sh is tracked
+deploy_panda/config.sh
