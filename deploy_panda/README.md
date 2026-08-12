@@ -3,6 +3,10 @@
 Serves [`BaiqiL/openvla-oft-panda-40k-steps`](https://huggingface.co/BaiqiL/openvla-oft-panda-40k-steps)
 on an inference server and drives a DROID Panda from a separate robot host.
 
+> This directory is specific to this fork. The model, the training code and everything else
+> in this repository come from [moojink/openvla-oft](https://github.com/moojink/openvla-oft)
+> (MIT); see the [root README](../README.md) for the fork's scope.
+
 ```
 [robot host]                                  [inference server]
  DROID RobotEnv                                openvla-oft + panda-40k

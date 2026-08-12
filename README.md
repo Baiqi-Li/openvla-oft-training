@@ -1,3 +1,34 @@
+> ## About this fork
+>
+> This repository is a fork of **[moojink/openvla-oft](https://github.com/moojink/openvla-oft)**,
+> branched at commit [`e4287e9`](https://github.com/moojink/openvla-oft/commit/e4287e94541f459edc4feabc4e181f537cd569a8)
+> ("Update pyproject.toml: Pin diffusers version", 2025-09-08). That project is itself
+> built on **[openvla/openvla](https://github.com/openvla/openvla)**.
+>
+> All of the code below, the model architecture, the training recipe and the paper are the
+> work of the original authors. This fork adds only the following, for fine-tuning and
+> deploying OpenVLA-OFT on a single-arm Franka Panda:
+>
+> | Added here | What it is |
+> | --- | --- |
+> | `prismatic/vla/constants.py` | `PANDA_CONSTANTS` (15-action chunks, 8-dim actions/proprio) and a `ROBOT_PLATFORM` env var for selecting the platform explicitly |
+> | `prismatic/vla/datasets/rlds/oxe/` | The `panda_2026_02_09_all` / `panda_2026_03_27` datasets (converted from LeRobot) and `ActionEncoding.JOINT_VEL` support |
+> | `vla-scripts/deploy.py` | Optional `--expected_*` startup self-checks (disabled by default; upstream behavior is unchanged) |
+> | [`deploy_panda/`](deploy_panda/) | Two-host deployment: an inference server plus a DROID robot-host client |
+>
+> To pull in upstream changes:
+>
+> ```bash
+> git remote add moojink https://github.com/moojink/openvla-oft.git
+> git fetch moojink && git merge moojink/main
+> ```
+>
+> Licensed under the original [MIT license](LICENSE) (Copyright (c) 2025 Moo Jin Kim,
+> Chelsea Finn, Percy Liang). **Please direct questions about the fork-specific additions
+> to this repository's issues, not to the upstream authors.**
+
+---
+
 # Fine-Tuning Vision-Language-Action Models: Optimizing Speed and Success
 
 **Project website: https://openvla-oft.github.io/**
@@ -80,6 +111,11 @@ See [LIBERO.md](LIBERO.md) for fine-tuning/evaluating on LIBERO simulation bench
 See [ALOHA.md](ALOHA.md) for fine-tuning/evaluating on real-world ALOHA robot tasks.
 
 ## Support
+
+> **Fork note:** the paragraph below is the upstream project's support policy and applies to
+> upstream OpenVLA-OFT. For anything specific to this fork -- the panda datasets, the
+> `ROBOT_PLATFORM` selection or `deploy_panda/` -- please open an issue here instead of
+> contacting the upstream authors.
 
 If you run into any issues, please open a new GitHub issue. If you do not receive a response within 2 business days, please email Moo Jin Kim (moojink@cs.stanford.edu) to bring the issue to his attention.
 
